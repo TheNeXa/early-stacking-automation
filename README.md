@@ -1,4 +1,4 @@
-# Early Stacking Automation README
+# Early Stacking Automation
 
 ## Overview
 The **Early Stacking Automation** is a Google Apps Script solution designed to streamline container yard requests for early stacking at shipping terminals. It automates the processing and emailing of requests based on vessel schedules, ensuring timely submissions while reducing manual effort. The accompanying `SubsequentEarlyStackingUI.html` provides a user-friendly sidebar interface for manual subsequent sendings.
