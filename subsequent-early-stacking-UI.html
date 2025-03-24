@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #BD0F72; /* ONE's magenta color */
+      color: #333;
+      width: 300px; /* Fixed width for sidebar */
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      padding: 10px 15px;
+      background-color: #BD0F72;
+      border-bottom: 2px solid #FFFFFF;
+    }
+    .header img {
+      width: 100px; /* Adjusted for sidebar */
+      height: auto;
+      margin-right: 10px;
+    }
+    .header h2 {
+      color: #FFFFFF;
+      font-size: 20px; /* Smaller font for sidebar */
+      font-weight: bold;
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .container {
+      background-color: #FFFFFF; /* White filler background */
+      margin: 10px;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    label {
+      display: block;
+      margin: 8px 0 4px;
+      font-weight: bold;
+      color: #BD0F72;
+      font-size: 14px;
+    }
+    select, button {
+      width: 100%;
+      padding: 6px;
+      margin-bottom: 10px;
+      border: 1px solid #BD0F72;
+      border-radius: 4px;
+      font-size: 13px;
+      box-sizing: border-box;
+    }
+    button {
+      background-color: #BD0F72;
+      color: #FFFFFF;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #9A0C5B; /* Slightly darker magenta for hover */
+    }
+  </style>
+  <script>
+    function loadVessels() {
+      google.script.run.withSuccessHandler(function(vessels) {
+        const vesselSelect = document.getElementById('vesselSelect');
+        vesselSelect.innerHTML = '<option value="">Choose Vessel</option>';
+        vessels.forEach(vessel => {
+          vesselSelect.innerHTML += `<option value="${vessel}">${vessel}</option>`;
+        });
+      }).getVessels();
+    }
+
+    function updateSending() {
+      const vessel = document.getElementById('vesselSelect').value;
+      const sendingSelect = document.getElementById('sendingSelect');
+      sendingSelect.innerHTML = '';
+
+      if (!vessel) {
+        return;
+      }
+
+      // Populate dropdown with fixed range: 1st Sending to 20th Sending
+      for (let i = 1; i <= 20; i++) {
+        sendingSelect.innerHTML += `<option value="${i}">${i}${getOrdinalSuffix(i)} Sending</option>`;
+      }
+    }
+
+    function sendEmail() {
+      const vessel = document.getElementById('vesselSelect').value;
+      const sendingNumber = parseInt(document.getElementById('sendingSelect').value);
+
+      if (!vessel || !sendingNumber) {
+        alert('Please select a vessel and sending number.');
+        return;
+      }
+
+      google.script.run.withSuccessHandler(function(count) {
+        if (count > 0) {
+          alert(`Email sent successfully for ${count} request${count > 1 ? 's' : ''}.`);
+        } else {
+          alert('No unprocessed early stacking requests found for this vessel.');
+        }
+      }).sendSubsequentEarlyStackingEmail(vessel, sendingNumber);
+    }
+
+    function getOrdinalSuffix(number) {
+      const suffixes = ["th", "st", "nd", "rd"];
+      const lastTwoDigits = number % 100;
+      const lastDigit = number % 10;
+      return (lastTwoDigits >= 11 && lastTwoDigits <= 13) ? "th" : suffixes[lastDigit] || "th";
+    }
+
+    // Load vessels when the sidebar is opened
+    document.addEventListener('DOMContentLoaded', loadVessels);
+  </script>
+</head>
+<body>
+  <div class="header">
+    <img src="https://logowik.com/content/uploads/images/one-ocean-network-express8385.logowik.com.webp" alt="ONE Logo">
+    <h2>Early Stacking</h2>
+  </div>
+  <div class="container">
+    <label for="vesselSelect">Choose Vessel:</label>
+    <select id="vesselSelect" onchange="updateSending()"></select>
+
+    <label for="sendingSelect">Choose Sending:</label>
+    <select id="sendingSelect"></select>
+
+    <button onclick="sendEmail()">Send All Unprocessed Requests</button>
+  </div>
+</body>
+</html>
